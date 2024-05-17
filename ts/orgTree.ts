@@ -1,181 +1,198 @@
 interface INode {
-    name: string,
-    id: string,
-    father: string
+    name: string;
+    id: string;
+    father: string;
 }
 
 interface IOptions {
-    nodeWidth?: number,
-    nodeHeight?: number,
-    childDistance?: number,
-    siblingDistance?: number,
+    nodeWidth?: number;
+    nodeHeight?: number;
+    childDistance?: number;
+    siblingDistance?: number;
+}
+
+interface INode {
+    name: string;
+    id: string;
+    father: string;
+}
+
+interface IOptions {
+    nodeWidth?: number;
+    nodeHeight?: number;
+    childDistance?: number;
+    siblingDistance?: number;
 }
 
 class OrgTree {
-    private svg: SVGSVGElement
-    private viewBox: SVGRect
-    private isPanning: boolean
-    private startX: number
-    private startY: number
-    private zoomLevel: number
-    private nodes: Array<INode>
-    private options?: IOptions
+    private svg: SVGSVGElement;
+    private viewBox: SVGRect;
+    private isPanning: boolean;
+    private startX: number;
+    private startY: number;
+    private zoomLevel: number;
+    private nodes: Array<INode>;
+    private options?: IOptions;
 
     constructor(svgId: string, nodes: Array<INode>, options?: IOptions) {
-        const svgElement = document.getElementById(svgId)
+        const svgElement = document.getElementById(svgId);
         if (!svgElement || !(svgElement instanceof SVGSVGElement)) {
-            throw new Error('Elemento SVG no encontrado o no es un SVGSVGElement')
+            throw new Error('Elemento SVG no encontrado o no es un SVGSVGElement');
         }
 
-        this.svg = svgElement as SVGSVGElement
-        this.svg.setAttribute('viewBox', '0 0 800 600')
-        this.viewBox = this.svg.viewBox.baseVal
-        this.isPanning = false
-        this.startX = 0
-        this.startY = 0
-        this.zoomLevel = 1
-        this.nodes = nodes
-        this.options = options
+        this.svg = svgElement as SVGSVGElement;
+        this.svg.setAttribute('viewBox', '0 0 800 600');
+        this.viewBox = this.svg.viewBox.baseVal;
+        this.isPanning = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.zoomLevel = 1;
+        this.nodes = nodes;
+        this.options = options;
 
-        this.initEventListeners()
-        this.loadNodes()
+        this.initEventListeners();
+        this.loadNodes();
     }
 
     private initEventListeners(): void {
-        this.svg.addEventListener('mousedown', this.onMouseDown.bind(this))
-        this.svg.addEventListener('mousemove', this.onMouseMove.bind(this))
-        this.svg.addEventListener('mouseup', this.onMouseUp.bind(this))
-        this.svg.addEventListener('mouseleave', this.onMouseLeave.bind(this))
-        this.svg.addEventListener('wheel', this.onWheel.bind(this))
+        this.svg.addEventListener('mousedown', this.onMouseDown.bind(this));
+        this.svg.addEventListener('mousemove', this.onMouseMove.bind(this));
+        this.svg.addEventListener('mouseup', this.onMouseUp.bind(this));
+        this.svg.addEventListener('mouseleave', this.onMouseLeave.bind(this));
+        this.svg.addEventListener('wheel', this.onWheel.bind(this));
     }
 
     private onMouseDown(event: MouseEvent): void {
-        this.isPanning = true
-        this.startX = event.clientX
-        this.startY = event.clientY
+        this.isPanning = true;
+        this.startX = event.clientX;
+        this.startY = event.clientY;
     }
 
     private onMouseMove(event: MouseEvent): void {
         if (this.isPanning) {
-            let dx = (this.startX - event.clientX) / (this.zoomLevel*1.225)
-            let dy = (this.startY - event.clientY) / (this.zoomLevel*1.225)
-            this.viewBox.x += dx
-            this.viewBox.y += dy
-            this.startX = event.clientX
-            this.startY = event.clientY
+            let dx = (this.startX - event.clientX) / (this.zoomLevel * 1.225);
+            let dy = (this.startY - event.clientY) / (this.zoomLevel * 1.225);
+            this.viewBox.x += dx;
+            this.viewBox.y += dy;
+            this.startX = event.clientX;
+            this.startY = event.clientY;
         }
     }
 
     private onMouseUp(): void {
-        this.isPanning = false
+        this.isPanning = false;
     }
 
     private onMouseLeave(): void {
-        this.isPanning = false
+        this.isPanning = false;
     }
 
     private onWheel(event: WheelEvent): void {
-        event.preventDefault()
-        const zoomFactor = 0.1
-        const mouseX = event.clientX
-        const mouseY = event.clientY
-        const svgRect = this.svg.getBoundingClientRect()
-        const offsetX = mouseX - svgRect.left
-        const offsetY = mouseY - svgRect.top
-        const scaleX = offsetX / svgRect.width
-        const scaleY = offsetY / svgRect.height
+        event.preventDefault();
+        const zoomFactor = 0.1;
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+        const svgRect = this.svg.getBoundingClientRect();
+        const offsetX = mouseX - svgRect.left;
+        const offsetY = mouseY - svgRect.top;
+        const scaleX = offsetX / svgRect.width;
+        const scaleY = offsetY / svgRect.height;
 
-        const prevViewBoxWidth = this.viewBox.width
-        const prevViewBoxHeight = this.viewBox.height
+        const prevViewBoxWidth = this.viewBox.width;
+        const prevViewBoxHeight = this.viewBox.height;
 
         if (event.deltaY < 0) {
             // Zoom in
-            this.zoomLevel = Math.min(5, this.zoomLevel + zoomFactor)
+            this.zoomLevel = Math.min(3, this.zoomLevel + zoomFactor);
         } else {
             // Zoom out
-            this.zoomLevel = Math.max(0.5, this.zoomLevel - zoomFactor)
+            this.zoomLevel = Math.max(0.1, this.zoomLevel - zoomFactor);
         }
 
-        this.viewBox.width = 800 / this.zoomLevel
-        this.viewBox.height = 600 / this.zoomLevel
+        this.viewBox.width = 800 / this.zoomLevel;
+        this.viewBox.height = 600 / this.zoomLevel;
 
         // Calculate new viewBox position to keep the zoom centered
-        this.viewBox.x += (prevViewBoxWidth - this.viewBox.width) * scaleX
-        this.viewBox.y += (prevViewBoxHeight - this.viewBox.height) * scaleY
+        this.viewBox.x += (prevViewBoxWidth - this.viewBox.width) * scaleX;
+        this.viewBox.y += (prevViewBoxHeight - this.viewBox.height) * scaleY;
     }
 
-    // Cargamos los nodos en el SVG
+    // Calcular el número de descendientes de un nodo
+    private countDescendants(nodeId: string): number {
+        const children = this.nodes.filter(node => node.father === nodeId);
+        let count = children.length;
+        children.forEach(child => {
+            count += this.countDescendants(child.id);
+        });
+        return count;
+    }
+
     private loadNodes(): void {
-        // Determino cuantos hijos tiene cada nodo
+        const nodeWidth = this.options?.nodeWidth || 200;
+        const nodeHeight = this.options?.nodeHeight || 130;
+        const childDistance = this.options?.childDistance || 50;
+        const siblingDistance = this.options?.siblingDistance || 100;
+
+        const rootNode = this.nodes.find(node => node.father === '');
+        if (!rootNode) {
+            throw new Error('No se encontró el nodo raíz');
+        }
+
+        const positions: Record<string, { x: number; y: number }> = {};
+
+        const setPosition = (node: INode, x: number, y: number): void => {
+            positions[node.id] = { x, y };
+
+            const children = this.nodes.filter(n => n.father === node.id);
+            if (children.length === 0) return;
+
+            let totalDescendants = children.reduce((sum, child) => sum + this.countDescendants(child.id), 0);
+            let siblingX = x - ((totalDescendants * (nodeWidth + siblingDistance)) / 2);
+
+            children.forEach((child, index) => {
+                const childDescendants = this.countDescendants(child.id);
+                const childX = siblingX + (childDescendants * (nodeWidth + siblingDistance)) / 2;
+                setPosition(child, childX, y + childDistance + nodeHeight);
+                siblingX += (childDescendants + 1) * (nodeWidth + siblingDistance);
+            });
+        };
+
+        setPosition(rootNode, 400, 0);
+
         this.nodes.forEach(node => {
-
-        })
-
-        //Creo el visual de los nodos
-        this.nodes.forEach(node => {
-            // Determinamos el tamaño de los nodos, y si no existen en las opciones, les damos un valor por defecto
-            const nodeWidth = this.options?.nodeWidth ? this.options.nodeWidth : 200;
-            const nodeHeight = this.options?.nodeHeight ? this.options.nodeHeight : 130;
-
-            // Determinamos las distancias que tendran los nodos entre sí teniendo en cuenta el tamaño pre establecido
-            const childDistance = this.options?.childDistance ? (this.options.childDistance + nodeHeight) : (nodeHeight + 50)
-            const siblingDistance = this.options?.siblingDistance ? (this.options.siblingDistance + nodeWidth) : (nodeWidth + 100)
-
-            // Obtenemos el padre del elemento mediante el ID del mismo
-            const Arrayfather = Array.from(document.getElementsByName('node')).filter(div => {
-                if (div.id == node.father) {
-                    return div
-                }
-            })
-            const father = Arrayfather[0]?.parentElement
-            let fatherPositionY = Number(father?.getAttribute('y'))
-            fatherPositionY = isNaN(fatherPositionY) ? 0 : fatherPositionY
-            console.log(fatherPositionY)
-
-
+            const position = positions[node.id];
             const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject') as SVGForeignObjectElement;
-            foreignObject.setAttribute('x', `${400 - nodeWidth/2}`);
-            foreignObject.setAttribute('y', `${fatherPositionY + childDistance}`);
+            foreignObject.setAttribute('x', `${position.x}`);
+            foreignObject.setAttribute('y', `${position.y}`);
             foreignObject.setAttribute('width', `${nodeWidth}`);
             foreignObject.setAttribute('height', `${nodeHeight}`);
-            foreignObject.style.padding = '5px'
+            foreignObject.style.padding = '5px';
 
             const div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div') as HTMLDivElement;
-            div.id = node.id
-            div.setAttribute('name', 'node')
-            div.textContent = node.name
-            div.title = node.name
-            div.classList.add('defaultNode')
+            div.id = node.id;
+            div.setAttribute('name', 'node');
+            div.textContent = node.name;
+            div.title = node.name;
+            div.classList.add('defaultNode');
 
             foreignObject.appendChild(div);
-            this.svg.appendChild(foreignObject)
-        })
+            this.svg.appendChild(foreignObject);
+        });
     }
 }
-
-let u1: INode = {
-    name: 'Juanchi',
-    id: 'general',
-    father: '0'
-};
-
-let u2: INode = {
-    name: 'María',
-    id: 'coronel',
-    father: 'general'
-};
-
-let u3: INode = {
-    name: 'Lucas',
-    id: 'mayor',
-    father: 'general'
-};
-
-let u4: INode = {
-    name: 'Marcos',
-    id: 'cabito',
-    father: 'coronel'
-};
+const nodes: INode[] = [
+    { name: 'Juanchi', id: '1', father: '' },
+    { name: 'María', id: '2', father: '1' },
+    { name: 'Lucas', id: '3', father: '1' },
+    { name: 'Hijo María', id: '4', father: '2' },
+    { name: 'Hijo María', id: '5', father: '2' },
+    { name: 'Hijo Lucas', id: '6', father: '3' },
+    { name: 'Hijo Lucas', id: '7', father: '3' },
+    { name: 'Hijo Lucas', id: '8', father: '3' },
+    { name: 'Hijo María', id: '9', father: '2' },
+    { name: 'Hijo María', id: '10', father: '2' },
+    { name: 'Hijo María', id: '11', father: '2' }
+];
 
 
 const options: IOptions = {
@@ -186,8 +203,6 @@ const options: IOptions = {
     siblingDistance: 70,
 }
 
-const arraysito = [u1, u2, u3, u4]
-
-const orgTree = new OrgTree('svgCanvas', 
-arraysito,
+const orgTree = new OrgTree('svgCanvas',
+    nodes,
 )
